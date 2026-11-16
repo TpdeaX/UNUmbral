@@ -10,16 +10,16 @@
   <meta name="author" content="Té Verde">
   <meta name="description" content="UNUmbral es tu organizador universitario 100% offline: horario semanal en formato de 12 horas, control de calificaciones y agenda de entregas críticas.">
   <title>UNUmbral · Horario, Cursos y Notas Universitarias</title>
-  <link rel="canonical" href="https://teverde29.github.io/UNUmbral/">
+  <link rel="canonical" href="https://tpdeax.github.io/UNUmbral/">
   <meta property="og:type" content="website">
   <meta property="og:title" content="UNUmbral · Horario, Cursos y Notas Universitarias">
   <meta property="og:description" content="Organizador universitario 100% offline con horario semanal en 12 horas AM/PM, colores pasteles, calculadora de notas y entregas priorizadas.">
-  <meta property="og:url" content="https://teverde29.github.io/UNUmbral/">
-  <meta property="og:image" content="https://teverde29.github.io/UNUmbral/icon-512.png">
+  <meta property="og:url" content="https://tpdeax.github.io/UNUmbral/">
+  <meta property="og:image" content="https://tpdeax.github.io/UNUmbral/icon-512.png">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="UNUmbral · Horario, Cursos y Notas Universitarias">
   <meta name="twitter:description" content="Organizador universitario 100% offline con horario semanal en 12 horas AM/PM, colores pasteles, calculadora de notas y entregas priorizadas.">
-  <meta name="twitter:image" content="https://teverde29.github.io/UNUmbral/icon-512.png">
+  <meta name="twitter:image" content="https://tpdeax.github.io/UNUmbral/icon-512.png">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -29,11 +29,11 @@
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "UNUmbral",
-    "url": "https://teverde29.github.io/unumbral/",
+    "url": "https://tpdeax.github.io/UNUmbral/",
     "applicationCategory": "EducationalApplication",
     "operatingSystem": "All",
     "datePublished": "2026-10-26",
-    "dateModified": "2026-10-26",
+    "dateModified": "2026-11-16",
     "author": {
       "@type": "Person",
       "name": "Té Verde",
@@ -145,6 +145,34 @@
           </div>
           <div id="urgent-tasks-list" class="cards-list">
             <!-- Renderizado dinámico -->
+          </div>
+
+          <!-- Bloque de Enfoque Offline + Ecosistema (Atelier Diario & OMNI ARENA) -->
+          <div class="focus-eco-card" id="section-enfoque-ecosistema">
+            <div class="focus-eco-head">
+              <div>
+                <h2 class="section-title" style="margin:0;">Enfoque y Bienestar</h2>
+                <p class="section-subtitle" style="margin:2px 0 0;">Temporizador Pomodoro offline y accesos al ecosistema</p>
+              </div>
+              <button type="button" id="btn-copy-day-summary" class="btn-secondary btn-sm">Copiar resumen</button>
+            </div>
+            <div class="focus-clock-row">
+              <span class="focus-clock" id="focus-clock-display">25:00</span>
+              <div class="focus-presets">
+                <button type="button" class="seg-btn active" data-focus-min="25">25m</button>
+                <button type="button" class="seg-btn" data-focus-min="15">15m</button>
+                <button type="button" class="seg-btn" data-focus-min="5">5m</button>
+              </div>
+              <div class="focus-actions">
+                <button type="button" id="btn-focus-toggle" class="btn-primary btn-sm">Iniciar</button>
+                <button type="button" id="btn-focus-reset" class="btn-secondary btn-sm">Reiniciar</button>
+              </div>
+            </div>
+            <div class="eco-bridge-row">
+              <a id="eco-link-atelier" class="eco-link-chip" href="../atelier-diario/">Atelier Diario (Lectura y Voz)</a>
+              <a id="eco-link-calm" class="eco-link-chip is-calm" href="../atelier-diario/#calm">SOS Calma</a>
+              <a id="eco-link-arena" class="eco-link-chip" href="../omni-arena/">OMNI ARENA (2D/3D)</a>
+            </div>
           </div>
         </div>
       </div>
@@ -683,7 +711,7 @@
           <span id="db-indicator-text">Tus datos están protegidos y guardados en tu teléfono</span>
         </div>
         <p style="margin-top:10px;font-size:11.5px;color:var(--text-tertiary);">
-          Desarrollado por <a href="https://github.com/TeVerde29" target="_blank" rel="noopener noreferrer" style="color:var(--text-secondary);">Té Verde</a> · Actualizado en octubre de 2026 · <a href="PRIVACY.md" id="btn-ver-privacidad" style="color:var(--text-secondary);text-decoration:underline;">Privacidad</a>
+          Proyecto original creado por <a href="https://github.com/TeVerde29" target="_blank" rel="noopener noreferrer" style="color:var(--text-secondary);">Té Verde (TeVerde29)</a> bajo licencia MIT · Adaptado por <a href="https://github.com/TpdeaX" target="_blank" rel="noopener noreferrer" style="color:var(--text-secondary);">TpdeaX</a> e integrado con Atelier Diario y OMNI ARENA · <a href="PRIVACY.md" id="btn-ver-privacidad" style="color:var(--text-secondary);text-decoration:underline;">Privacidad</a>
         </p>
       </div>
     </section>
@@ -1631,6 +1659,7 @@
 <script defer src="lib/views/horarioView.js"></script>
 <script defer src="lib/views/cursosView.js"></script>
 <script defer src="lib/views/tareasView.js"></script>
+<script defer src="lib/focusTimer.js"></script>
 <script defer src="app.js"></script>
 
 <!-- MODAL DE POLÍTICA DE PRIVACIDAD LOCAL -->

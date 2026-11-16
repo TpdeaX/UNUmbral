@@ -1,5 +1,5 @@
 // Service Worker para funcionamiento 100% offline con actualización en segundo plano
-const CACHE_NAME = "unumbral-ricra-v15";
+const CACHE_NAME = "unumbral-tpdeax-v1";
 const ASSETS = [
   "./",
   "./index.html",
@@ -19,6 +19,7 @@ const ASSETS = [
   "./lib/prioridad.js",
   "./lib/rendimiento.js",
   "./lib/huecos.js",
+  "./lib/focusTimer.js",
   "./lib/qrcode.min.js",
   "./lib/jsqr.min.js",
   "./lib/qr.js",

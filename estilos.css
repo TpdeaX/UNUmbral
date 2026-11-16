@@ -5972,3 +5972,75 @@ html.theme-transitioning .modal-sheet {
   gap: 8px;
 }
 
+/* --- BLOQUE ENFOQUE & ECOSISTEMA (ATELIER DIARIO + OMNI ARENA) --- */
+.focus-eco-card {
+  margin-top: 20px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.focus-eco-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.focus-clock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-subtle);
+}
+
+.focus-clock {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.focus-presets,
+.focus-actions,
+.eco-bridge-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.eco-link-chip {
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  padding: 7px 10px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.eco-link-chip:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.eco-link-chip.is-calm {
+  background: var(--status-success-bg);
+  color: var(--status-success);
+  border-color: var(--status-success);
+}
+

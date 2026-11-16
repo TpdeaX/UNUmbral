@@ -445,9 +445,14 @@ Este proyecto se distribuye bajo la licencia **MIT**. Consulta el archivo [LICEN
 
 ## Autor y Créditos
 
-**Té Verde**  
+Este repositorio está basado en el trabajo original de código abierto (**Licencia MIT**):
+
+**Té Verde** (Autor original)  
 Estudiante de Ingeniería de Sistemas e Informática — Universidad Nacional de Ucayali (UNU)  
 - GitHub: [@TeVerde29](https://github.com/TeVerde29)  
-- Correo: [hikih020@gmail.com](mailto:hikih020@gmail.com)  
-- Repositorio oficial: [https://github.com/TeVerde29/UNUmbral](https://github.com/TeVerde29/UNUmbral)  
-- Versión en línea (PWA): [https://teverde29.github.io/UNUmbral/](https://teverde29.github.io/UNUmbral/)
+- Repositorio original: [https://github.com/TeVerde29/UNUmbral](https://github.com/TeVerde29/UNUmbral)  
+- Versión original en línea (PWA): [https://teverde29.github.io/UNUmbral/](https://teverde29.github.io/UNUmbral/)
+
+**Adaptación e integración del ecosistema (`TpdeaX`):**  
+- Integrado con **Atelier Diario** (`Lectura`, `Caligrafía`, `Canto`, `SOS Calma`) y **OMNI ARENA** (`2D/3D`).
+- Añadido temporizador de enfoque Pomodoro offline (`lib/focusTimer.js`), copia rápida del resumen del día y despliegue automático en GitHub Pages (`https://tpdeax.github.io/UNUmbral/`).
