@@ -1,5 +1,5 @@
-// Service Worker para funcionamiento 100% offline con actualización en segundo plano
-const CACHE_NAME = "unumbral-tpdeax-v2";
+// Service Worker para funcionamiento 100% offline con actualización en segundo plano y notificaciones PWA
+const CACHE_NAME = "unumbral-tpdeax-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -16,6 +16,8 @@ const ASSETS = [
   "./lib/ajustes.js",
   "./lib/planificador.js",
   "./lib/notificaciones.js",
+  "./lib/miHorario2026II.js",
+  "./lib/icsExport.js",
   "./lib/asistencia.js",
   "./lib/prioridad.js",
   "./lib/rendimiento.js",
@@ -23,6 +25,7 @@ const ASSETS = [
   "./lib/focusTimer.js",
   "./lib/qrcode.min.js",
   "./lib/jsqr.min.js",
+  "./lib/pako.min.js",
   "./lib/qr.js",
   "./lib/deeplink.js",
   "./lib/services/tareasService.js",
@@ -66,5 +69,37 @@ self.addEventListener("fetch", (e) => {
         return response;
       })
       .catch(() => caches.match(e.request).then((cached) => cached || caches.match("./index.html")))
+  );
+});
+
+self.addEventListener("notificationclick", (e) => {
+  const notif = e.notification;
+  const extra = notif?.data || {};
+  const action = e.action || "";
+  notif.close();
+
+  const targetHash = extra.tipo === "tarea" ? "#tareas" : "#hoy";
+
+  e.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (clientList) => {
+      for (const client of clientList) {
+        if ("focus" in client) {
+          await client.focus();
+          if (action) {
+            client.postMessage({
+              type: "UNUMBRAL_NOTIF_ACTION",
+              action,
+              extra,
+              title: notif.title,
+              body: notif.body
+            });
+          }
+          return;
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(`./${targetHash}`);
+      }
+    })
   );
 });

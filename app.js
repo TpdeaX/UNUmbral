@@ -1301,8 +1301,14 @@ async function renderHoy() {
   }
 
   const todayKey = getTodayDayKey();
-  const classesToday = (await obtenerClasesEnriquecidas()).filter(c => c.dia_semana === todayKey);
+  const [todasClasesHoy, totalCursosHoy] = await Promise.all([
+    obtenerClasesEnriquecidas(),
+    db.cursos.count().catch(() => 0)
+  ]);
+  const classesToday = todasClasesHoy.filter(c => c.dia_semana === todayKey);
   classesToday.sort((a, b) => timeToMinutes(a.hora_inicio) - timeToMinutes(b.hora_inicio));
+
+  actualizarBannerPermisoNotifHoy(todasClasesHoy.length > 0 || totalCursosHoy > 0);
 
   const badgeEl = $("#badge-clases-hoy");
   badgeEl.textContent = `${classesToday.length} ${classesToday.length === 1 ? "clase" : "clases"}`;
@@ -1312,12 +1318,18 @@ async function renderHoy() {
   // Lista de clases de hoy
   const listEl = $("#today-classes-list");
   if (classesToday.length === 0) {
+    const sinCursosAun = totalCursosHoy === 0 && todasClasesHoy.length === 0;
     listEl.innerHTML = `
       <div class="empty-card">
         <div class="empty-card-icon-wrap">${ICONS.calendar}</div>
-        <strong>Sin clases programadas para hoy</strong>
-        <p>No tienes materias agendadas para el día de hoy.</p>
+        <strong>${sinCursosAun ? "Aún no has cargado tu horario" : "Sin clases programadas para hoy"}</strong>
+        <p>${sinCursosAun ? "Importa tu horario oficial del ciclo 2026-II (VIII ciclo) en un clic." : "No tienes materias agendadas para el día de hoy."}</p>
+        ${sinCursosAun ? `<button type="button" class="btn-primary btn-sm" id="btn-hoy-cargar-2026-2" style="margin-top:10px;">Cargar Mi Horario 2026-II</button>` : ""}
       </div>`;
+    if (sinCursosAun) {
+      const btnHoyImport = $("#btn-hoy-cargar-2026-2", listEl);
+      if (btnHoyImport) btnHoyImport.addEventListener("click", () => cargarMiHorario2026II({ confirmarSiTieneDatos: false }));
+    }
   } else {
     listEl.innerHTML = classesToday.map(c => {
       const cancelada = esFeriadoHoy || (typeof esClaseCancelada === "function" ? esClaseCancelada : window.esClaseCancelada)(c.id, c.curso_id, fechaHoyStr, excepciones);
@@ -2283,8 +2295,13 @@ async function renderHorario() {
         <div class="empty-card-icon-wrap">${ICONS.calendar}</div>
         <strong>Horario no configurado</strong>
         <p>${emptyAction ? emptyAction.hint : "Asigna día y hora a tus cursos para ver la distribución semanal."}</p>
-        <button class="btn-primary btn-sm" id="btn-add-class-empty-mat" style="margin-top:10px;">${emptyAction ? emptyAction.label : "Añadir Clase"}</button>
+        <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:10px;">
+          ${cursosCount === 0 ? `<button type="button" class="btn-primary btn-sm" id="btn-horario-cargar-2026-2">Cargar Mi Horario 2026-II</button>` : ""}
+          <button class="btn-secondary btn-sm" id="btn-add-class-empty-mat">${emptyAction ? emptyAction.label : "Añadir Clase"}</button>
+        </div>
       </div>`;
+    const btnPreset = $("#btn-horario-cargar-2026-2", container);
+    if (btnPreset) btnPreset.addEventListener("click", () => cargarMiHorario2026II({ confirmarSiTieneDatos: false }));
     const btn = $("#btn-add-class-empty-mat", container);
     if (btn) btn.addEventListener("click", () => openNewClassModal("LUNES"));
     return;
@@ -4798,6 +4815,15 @@ async function cargarAjustesUI() {
   setChk("#ajuste-nivel5-silencio", map.nivel5_ignora_silencio);
   setChk("#ajuste-resumen-activo", map.resumen_activo);
 
+  const avisoMinSel = $("#ajuste-aviso-clase-min");
+  if (avisoMinSel) {
+    const avisoKey = Array.isArray(map.aviso_clase_min) && map.aviso_clase_min.length
+      ? map.aviso_clase_min.join(",")
+      : "30,10";
+    const hasOption = Array.from(avisoMinSel.options).some(o => o.value === avisoKey);
+    avisoMinSel.value = hasOption ? avisoKey : "30,10";
+  }
+
   setVal("#ajuste-resumen-hora", map.resumen_hora ?? "07:00");
   setVal("#ajuste-silencio-desde", map.silencio_desde ?? "22:00");
   setVal("#ajuste-silencio-hasta", map.silencio_hasta ?? "07:00");
@@ -4893,11 +4919,18 @@ async function guardarAjustesUI() {
   const getVal = (id, dflt) => $(id) ? $(id).value : dflt;
   const getChk = (id, dflt) => $(id) ? $(id).checked : dflt;
 
+  const avisoMinRaw = getVal("#ajuste-aviso-clase-min", "30,10");
+  const avisoClaseMin = String(avisoMinRaw)
+    .split(",")
+    .map(n => parseInt(n.trim(), 10))
+    .filter(n => Number.isFinite(n) && n > 0 && n <= 120);
+
   const updates = {
     notif_clases: getChk("#ajuste-notif-clases", true),
     notif_tareas: getChk("#ajuste-notif-tareas", true),
     notif_urgentes: getChk("#ajuste-notif-urgentes", true),
     nivel5_ignora_silencio: getChk("#ajuste-nivel5-silencio", true),
+    aviso_clase_min: avisoClaseMin.length ? avisoClaseMin : [30, 10],
     resumen_activo: getChk("#ajuste-resumen-activo", true),
     resumen_hora: getVal("#ajuste-resumen-hora", "07:00"),
     silencio_desde: getVal("#ajuste-silencio-desde", "22:00"),
@@ -4917,9 +4950,62 @@ async function guardarAjustesUI() {
   if (typeof reprogramarTodo === "function") reprogramarTodo();
 }
 
+async function actualizarEstadoNotificacionesUI() {
+  const badgeEl = $("#notif-perm-badge");
+  const summaryEl = $("#notif-status-summary");
+  const btnActivar = $("#btn-activar-notifs");
+  if (!badgeEl && !summaryEl) return;
+  if (typeof obtenerEstadoNotificaciones !== "function") return;
+
+  const st = await obtenerEstadoNotificaciones();
+  if (badgeEl) {
+    badgeEl.classList.remove("is-granted", "is-denied");
+    if (!st.soportado || st.permiso === "unsupported") {
+      badgeEl.textContent = "No disponible";
+    } else if (st.permiso === "granted") {
+      badgeEl.textContent = st.modo === "capacitor" ? "Activas (Android)" : "Activas (Web/PWA)";
+      badgeEl.classList.add("is-granted");
+    } else if (st.permiso === "denied") {
+      badgeEl.textContent = "Bloqueadas";
+      badgeEl.classList.add("is-denied");
+    } else {
+      badgeEl.textContent = "Sin permiso";
+    }
+  }
+
+  if (btnActivar) {
+    btnActivar.classList.toggle("hidden", st.permiso === "granted" || !st.soportado);
+  }
+
+  if (summaryEl) {
+    if (!st.soportado) {
+      summaryEl.textContent = "Este navegador no admite notificaciones Web; las alertas visuales en la app siguen activas.";
+    } else if (st.permiso === "denied") {
+      summaryEl.textContent = "Permiso bloqueado en el navegador. Habilítalo desde el candado de la barra de direcciones.";
+    } else if (st.permiso !== "granted") {
+      summaryEl.textContent = "Pulsa «Activar notificaciones» para recibir avisos antes de cada clase y entrega.";
+    } else {
+      const proxTxt = window.UNUPlanificador?.formatearResumenProximaAlerta && st.proxima
+        ? window.UNUPlanificador.formatearResumenProximaAlerta([st.proxima], new Date())
+        : "Sin alertas próximas programadas";
+      summaryEl.textContent = `${st.programadas} alertas programadas (14 días). Próxima: ${proxTxt}.`;
+    }
+  }
+}
+
+function actualizarBannerPermisoNotifHoy(tieneHorario) {
+  const banner = $("#hoy-notif-prompt-banner");
+  if (!banner) return;
+  const nativo = typeof esNativo === "function" && esNativo();
+  const descartado = localStorage.getItem("unumbral_notif_prompt_dismissed") === "1";
+  const puedePedirWeb = !nativo && typeof window !== "undefined" && "Notification" in window && Notification.permission === "default";
+  banner.classList.toggle("hidden", !(tieneHorario && puedePedirWeb && !descartado));
+}
+
 async function renderAjustes() {
   await cargarAjustesUI();
   await renderAjustesExcepciones();
+  await actualizarEstadoNotificacionesUI();
   if (typeof cargarSupabaseAjustesUI === "function") cargarSupabaseAjustesUI();
 }
 
@@ -6151,6 +6237,38 @@ async function exportFullBackup() {
   await descargarOCompartirJson(payload, nombreArchivo, "Copia de seguridad generada.");
 }
 
+async function exportFullICS() {
+  if (typeof generarICS !== "function" && typeof window?.UNUmbralICS?.generarICS !== "function") {
+    showToast("Exportador .ics no disponible.", true);
+    return;
+  }
+  const fnICS = typeof generarICS === "function" ? generarICS : window.UNUmbralICS.generarICS;
+  const [cursos, clases, tareas, ciclo, ajustesList] = await Promise.all([
+    db.cursos.toArray(),
+    db.clases.toArray(),
+    db.tareas.toArray(),
+    obtenerCicloActivo(),
+    db.ajustes.toArray()
+  ]);
+  if (clases.length === 0 && tareas.length === 0) {
+    showToast("No hay clases ni tareas para exportar al calendario.", true);
+    return;
+  }
+  const avisoAjuste = ajustesList.find(a => a.clave === "aviso_clase_min");
+  const avisoMin = Array.isArray(avisoAjuste?.valor) && avisoAjuste.valor.length ? avisoAjuste.valor[0] : 30;
+  const icsText = fnICS({ cursos, clases, tareas, ciclo, avisoMinutos: avisoMin });
+  const blob = new Blob([icsText], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `UNUmbral_Horario_${new Date().toISOString().slice(0, 10)}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("Calendario .ics descargado (compatible con Google/Apple Calendar).");
+}
+
 async function importFullBackup(file) {
   if (!file) return;
   try {
@@ -6285,6 +6403,83 @@ function wireDbCloudHooks() {
       t.hook("deleting", () => scheduleUmbralCloudPush());
     }
   });
+}
+
+async function cargarMiHorario2026II(opts = {}) {
+  const builder = typeof construirHorario2026II === "function"
+    ? construirHorario2026II
+    : window.UNUMiHorario2026II?.construirHorario2026II;
+  if (!builder) {
+    showToast("Plantilla de horario 2026-II no disponible.", true);
+    return;
+  }
+
+  const cursosActuales = await db.cursos.toArray();
+  const clasesActuales = await db.clases.toArray();
+
+  if (opts.confirmarSiTieneDatos !== false && (cursosActuales.length > 0 || clasesActuales.length > 0)) {
+    const ok = await confirmDialog(
+      "Cargar Mi Horario 2026-II (Ciclo VIII)",
+      "Se integrarán los 6 cursos y 9 sesiones del horario oficial 2026-II (Ciclo VIII) sin duplicar materias ni sesiones ya registradas. ¿Continuar?"
+    );
+    if (!ok) return;
+  }
+
+  const { ciclo, cursos, clases } = builder({ generarId: () => uuid() });
+
+  // Asegurar ciclo activo real (si solo existe ciclo-inicial o ninguno)
+  const cicloActual = await obtenerCicloActivo();
+  const usarCicloExistente = cicloActual && cicloActual.id !== "ciclo-inicial";
+  const targetCicloId = usarCicloExistente ? cicloActual.id : ciclo.id;
+
+  const porNombre = new Map(cursosActuales.map(c => [normalizarNombre(c.nombre), c]));
+  const cursosParaGuardar = [];
+  const tempIdToRealId = new Map();
+
+  for (const cur of cursos) {
+    const existente = porNombre.get(normalizarNombre(cur.nombre));
+    if (existente) {
+      tempIdToRealId.set(cur.id, existente.id);
+    } else {
+      const nuevo = { ...cur, ciclo_id: targetCicloId };
+      cursosParaGuardar.push(nuevo);
+      porNombre.set(normalizarNombre(nuevo.nombre), nuevo);
+      tempIdToRealId.set(cur.id, nuevo.id);
+    }
+  }
+
+  const firmasClases = new Set(
+    clasesActuales.map(cl => `${cl.curso_id}|${cl.dia_semana}|${to24Hour(cl.hora_inicio)}|${to24Hour(cl.hora_fin)}`)
+  );
+  const clasesParaGuardar = [];
+  for (const cl of clases) {
+    const realCursoId = tempIdToRealId.get(cl.curso_id) || cl.curso_id;
+    const firma = `${realCursoId}|${cl.dia_semana}|${to24Hour(cl.hora_inicio)}|${to24Hour(cl.hora_fin)}`;
+    if (!firmasClases.has(firma)) {
+      firmasClases.add(firma);
+      clasesParaGuardar.push({
+        ...cl,
+        curso_id: realCursoId,
+        ciclo_id: targetCicloId
+      });
+    }
+  }
+
+  await db.transaction("rw", db.ciclos, db.cursos, db.clases, db.ajustes, async () => {
+    if (!usarCicloExistente) {
+      await db.ciclos.where("estado").equals("activo").modify({ estado: "archivado" });
+      await db.ciclos.put(ciclo);
+      await db.ajustes.put({ clave: "ciclo_inicio", valor: ciclo.fecha_inicio });
+      await db.ajustes.put({ clave: "ciclo_fin", valor: ciclo.fecha_fin });
+    }
+    if (cursosParaGuardar.length) await db.cursos.bulkPut(cursosParaGuardar);
+    if (clasesParaGuardar.length) await db.clases.bulkPut(clasesParaGuardar);
+  });
+
+  if (typeof reprogramarTodo === "function") reprogramarTodo();
+  if (typeof scheduleUmbralCloudPush === "function") scheduleUmbralCloudPush();
+  showToast(`Horario 2026-II cargado (${cursosParaGuardar.length} cursos, ${clasesParaGuardar.length} sesiones).`);
+  switchTab("view-horario");
 }
 
 async function loadDemoSemester() {
@@ -7586,8 +7781,75 @@ function wireSettingsEvents() {
     }
   });
 
+  $("#btn-load-horario-2026-2").addEventListener("click", () => cargarMiHorario2026II({ confirmarSiTieneDatos: true }));
   $("#btn-load-demo").addEventListener("click", loadDemoSemester);
   $("#btn-clear-data").addEventListener("click", clearAllData);
+
+  const btnActivarNotifs = $("#btn-activar-notifs");
+  if (btnActivarNotifs) {
+    btnActivarNotifs.addEventListener("click", async () => {
+      if (typeof solicitarPermisoNotificaciones !== "function") return;
+      const res = await solicitarPermisoNotificaciones();
+      if (res.granted) {
+        showToast("Notificaciones activadas correctamente.");
+      } else if (res.state === "denied") {
+        showToast("Permiso bloqueado en el navegador. Revísalo en la barra de dirección.", true);
+      } else {
+        showToast("No se otorgó permiso para notificaciones.", true);
+      }
+      await actualizarEstadoNotificacionesUI();
+    });
+  }
+
+  const btnProbarNotif = $("#btn-probar-notif");
+  if (btnProbarNotif) {
+    btnProbarNotif.addEventListener("click", async () => {
+      if (typeof dispararNotificacionInmediata !== "function") return;
+      const ok = await dispararNotificacionInmediata(
+        "UNUmbral · Aviso de prueba",
+        "Tus recordatorios de clases y entregas están activos.",
+        "clases"
+      );
+      if (ok) {
+        showToast("Aviso de prueba enviado.");
+      } else {
+        showToast("Activa los permisos de notificación primero.", true);
+      }
+      await actualizarEstadoNotificacionesUI();
+    });
+  }
+
+  const btnHoyActivarNotifs = $("#btn-hoy-activar-notifs");
+  if (btnHoyActivarNotifs) {
+    btnHoyActivarNotifs.addEventListener("click", async () => {
+      if (typeof solicitarPermisoNotificaciones === "function") {
+        const res = await solicitarPermisoNotificaciones();
+        if (res.granted) showToast("Notificaciones activadas para tus clases y tareas.");
+      }
+      actualizarBannerPermisoNotifHoy(false);
+    });
+  }
+
+  const btnHoyOcultarNotifs = $("#btn-hoy-ocultar-notifs");
+  if (btnHoyOcultarNotifs) {
+    btnHoyOcultarNotifs.addEventListener("click", () => {
+      try { localStorage.setItem("unumbral_notif_prompt_dismissed", "1"); } catch {}
+      actualizarBannerPermisoNotifHoy(false);
+    });
+  }
+
+  if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+    window.addEventListener("unumbral-notifs-updated", () => {
+      if (state.currentTab === "view-ajustes") {
+        void actualizarEstadoNotificacionesUI();
+      }
+    });
+  }
+
+  const btnExpIcs = $("#btn-export-ics");
+  if (btnExpIcs) {
+    btnExpIcs.addEventListener("click", exportFullICS);
+  }
 
   const darkToggleAjuste = $("#ajuste-modo-oscuro-toggle");
   if (darkToggleAjuste) {

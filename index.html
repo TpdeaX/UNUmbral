@@ -111,6 +111,18 @@
         <button id="btn-desmarcar-feriado-hoy" class="btn-secondary btn-sm" style="font-size:11px;padding:3px 8px;">Quitar feriado</button>
       </div>
 
+      <!-- Aviso rápido de permisos de notificaciones Web/PWA -->
+      <div id="hoy-notif-prompt-banner" class="notif-prompt-banner hidden">
+        <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <span>Activa los avisos del navegador para recibir recordatorios antes de cada clase y entrega.</span>
+        </div>
+        <div style="display:flex; gap:6px; flex-shrink:0;">
+          <button type="button" id="btn-hoy-activar-notifs" class="btn-primary btn-sm">Activar</button>
+          <button type="button" id="btn-hoy-ocultar-notifs" class="btn-secondary btn-sm">Luego</button>
+        </div>
+      </div>
+
       <div class="hoy-layout-grid">
         <div class="hoy-col-main">
           <!-- Tarjeta de estado de clase en vivo -->
@@ -513,20 +525,39 @@
           <div class="settings-block-title">
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             <span>Notificaciones académicas</span>
+            <span id="notif-perm-badge" class="notif-perm-pill" style="margin-left:auto;">Verificando…</span>
+          </div>
+          <div class="notif-status-box">
+            <p id="notif-status-summary" style="font-size:12px; color:var(--text-secondary); margin:0;">Cargando programación de alertas…</p>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+              <button type="button" id="btn-activar-notifs" class="btn-primary btn-sm">Activar notificaciones</button>
+              <button type="button" id="btn-probar-notif" class="btn-secondary btn-sm">Probar aviso</button>
+            </div>
           </div>
           <div class="settings-toggle-group">
             <label class="settings-toggle-item">
               <div>
-                <strong>Avisos de Clases (30 y 10 min antes)</strong>
-                <p>Notificaciones antes de iniciar cada sesión programada.</p>
+                <strong>Avisos de Clases</strong>
+                <p>Notificaciones antes de iniciar cada sesión programada (Web/PWA y Android).</p>
               </div>
               <input type="checkbox" id="ajuste-notif-clases" class="toggle-checkbox" checked>
             </label>
 
+            <div class="form-group" style="margin: 6px 0 10px;">
+              <label class="form-label" for="ajuste-aviso-clase-min">Anticipación antes de cada clase</label>
+              <select id="ajuste-aviso-clase-min" class="field">
+                <option value="30,10">30 min y 10 min antes (Recomendado)</option>
+                <option value="60,30,10">1 h, 30 min y 10 min antes</option>
+                <option value="15,5">15 min y 5 min antes</option>
+                <option value="30">Solo 30 min antes</option>
+                <option value="10">Solo 10 min antes</option>
+              </select>
+            </div>
+
             <label class="settings-toggle-item">
               <div>
                 <strong>Alertas de Tareas (Nivel 1 al 3)</strong>
-                <p>Inician 48 h antes del vencimiento y se repiten cada 8 h.</p>
+                <p>Inician 48 h antes del vencimiento cada 8 h (y 2 h / 1 h si vence hoy).</p>
               </div>
               <input type="checkbox" id="ajuste-notif-tareas" class="toggle-checkbox" checked>
             </label>
@@ -728,6 +759,7 @@
           <button type="button" id="btn-sb-pull" class="btn-secondary btn-sm">Traer desde nube</button>
           <button type="button" id="btn-sb-paste-token" class="btn-secondary btn-sm">Pegar llave rápida</button>
           <button type="button" id="btn-export-backup-json" class="btn-secondary btn-sm">Exportar .json</button>
+          <button type="button" id="btn-export-ics" class="btn-secondary btn-sm">Exportar .ics</button>
           <label class="btn-secondary btn-sm" style="cursor:pointer;">
             <span>Importar .json</span>
             <input type="file" id="input-import-backup-json" accept=".json,application/json" style="display:none;">
@@ -735,16 +767,20 @@
         </div>
       </div>
 
-      <!-- Demo Semestre Universitario -->
+      <!-- Mi Horario Oficial y Datos de Demostración -->
       <div class="section-header" style="margin-top: 28px;">
         <div>
-          <h2 class="section-title">Datos de Demostración</h2>
-          <p class="section-subtitle">Carga un semestre modelo con materias y evaluaciones representativas</p>
+          <h2 class="section-title">Horario 2026-II y Datos Modelo</h2>
+          <p class="section-subtitle">Importa tu horario del VIII ciclo o carga un semestre de ejemplo</p>
         </div>
       </div>
 
       <div class="settings-card">
         <div class="settings-card-actions settings-demo-grid">
+          <button id="btn-load-horario-2026-2" class="btn-primary">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span>Cargar Mi Horario 2026-II (VIII)</span>
+          </button>
           <button id="btn-load-demo" class="btn-secondary">
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
             <span>Cargar Semestre Modelo</span>
@@ -1697,6 +1733,8 @@
 <script defer src="lib/ajustes.js"></script>
 <script defer src="lib/planificador.js"></script>
 <script defer src="lib/notificaciones.js"></script>
+<script defer src="lib/miHorario2026II.js"></script>
+<script defer src="lib/icsExport.js"></script>
 <script defer src="lib/asistencia.js"></script>
 <script defer src="lib/prioridad.js"></script>
 <script defer src="lib/rendimiento.js"></script>

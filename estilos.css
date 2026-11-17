@@ -6122,4 +6122,56 @@ html.theme-transitioning .modal-sheet {
   }
 }
 
+/* =====================================================================
+   NOTIFICACIONES WEB/PWA & CAPACITOR STATUS UI
+   ===================================================================== */
+.notif-perm-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.notif-perm-pill.is-granted {
+  background: var(--status-success-bg);
+  color: var(--status-success);
+  border-color: var(--status-success);
+}
+
+.notif-perm-pill.is-denied {
+  background: var(--status-danger-bg);
+  color: var(--status-danger);
+  border-color: var(--status-danger);
+}
+
+.notif-status-box {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-hairline);
+  margin-bottom: 12px;
+}
+
+.notif-prompt-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 13px;
+  margin-bottom: 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  border: 1px solid var(--accent-tint);
+  box-shadow: var(--shadow-sm);
+  font-size: 12.5px;
+  color: var(--text-primary);
+}
+
+
 
