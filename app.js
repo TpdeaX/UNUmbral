@@ -1083,6 +1083,7 @@ function toggleTheme() {
   if (typeof Haptic !== "undefined") Haptic.selection();
   document.documentElement.classList.add("theme-transitioning");
   applyTheme(state.theme === "dark" ? "light" : "dark");
+  if (typeof scheduleUmbralCloudPush === "function") scheduleUmbralCloudPush();
   setTimeout(() => {
     document.documentElement.classList.remove("theme-transitioning");
   }, 260);
@@ -4919,6 +4920,7 @@ async function guardarAjustesUI() {
 async function renderAjustes() {
   await cargarAjustesUI();
   await renderAjustesExcepciones();
+  if (typeof cargarSupabaseAjustesUI === "function") cargarSupabaseAjustesUI();
 }
 
 async function renderAjustesExcepciones() {
@@ -6081,7 +6083,7 @@ async function ejecutarImportacionHorario(data) {
   switchTab("view-horario");
 }
 
-async function exportFullBackup() {
+async function buildFullBackupPayload() {
   const [ciclos, cursos, classes, tasks, eventos, asistencia, excepciones, ajustes] = await Promise.all([
     db.ciclos.toArray(),
     db.cursos.toArray(),
@@ -6093,10 +6095,12 @@ async function exportFullBackup() {
     db.ajustes.toArray()
   ]);
 
-  const payload = {
+  return {
     tipo: "unumbral-backup-total",
     version: 5,
     fecha_creacion: new Date().toISOString(),
+    theme: state.theme || "light",
+    matrixCompact: state.matrixCompact !== false,
     ciclos: ciclos || [],
     cursos,
     clases: classes,
@@ -6106,7 +6110,43 @@ async function exportFullBackup() {
     excepciones: excepciones || [],
     ajustes: ajustes || []
   };
+}
 
+async function applyBackupPayload(data) {
+  if (data.theme === "dark" || data.theme === "light") {
+    applyTheme(data.theme);
+  }
+  await db.transaction("rw", [db.ciclos, db.cursos, db.clases, db.tareas, db.eventos, db.asistencia, db.excepciones, db.ajustes], async () => {
+    if (Array.isArray(data.ciclos) && data.ciclos.length > 0) {
+      await db.ciclos.bulkPut(data.ciclos);
+    }
+    if (Array.isArray(data.cursos) && data.cursos.length > 0) {
+      const cursosSanitizados = data.cursos.map(sanitizarCursoImportado).filter(Boolean);
+      if (cursosSanitizados.length) await db.cursos.bulkPut(cursosSanitizados);
+    }
+    const existentes = await db.cursos.toArray();
+    const r = convertirFormatoPlano(data.clases || [], data.tareas || [], existentes, []);
+    if (r.cursosNuevos.length) await db.cursos.bulkPut(r.cursosNuevos);
+    if (r.clases.length) await db.clases.bulkPut(r.clases);
+    if (r.tareas.length) await db.tareas.bulkPut(r.tareas);
+
+    if (Array.isArray(data.eventos) && data.eventos.length) {
+      await db.eventos.bulkPut(data.eventos);
+    }
+    if (Array.isArray(data.asistencia) && data.asistencia.length) {
+      await db.asistencia.bulkPut(data.asistencia);
+    }
+    if (Array.isArray(data.excepciones) && data.excepciones.length) {
+      await db.excepciones.bulkPut(data.excepciones);
+    }
+    if (Array.isArray(data.ajustes) && data.ajustes.length) {
+      await db.ajustes.bulkPut(data.ajustes);
+    }
+  });
+}
+
+async function exportFullBackup() {
+  const payload = await buildFullBackupPayload();
   const nombreArchivo = `UNUmbral_Backup_${new Date().toISOString().slice(0, 10)}.json`;
   await descargarOCompartirJson(payload, nombreArchivo, "Copia de seguridad generada.");
 }
@@ -6127,41 +6167,124 @@ async function importFullBackup(file) {
     );
     if (!ok) return;
 
-    await db.transaction("rw", [db.ciclos, db.cursos, db.clases, db.tareas, db.eventos, db.asistencia, db.excepciones, db.ajustes], async () => {
-      if (Array.isArray(data.ciclos) && data.ciclos.length > 0) {
-        await db.ciclos.bulkPut(data.ciclos);
-      }
-      if (Array.isArray(data.cursos) && data.cursos.length > 0) {
-        const cursosSanitizados = data.cursos.map(sanitizarCursoImportado).filter(Boolean);
-        if (cursosSanitizados.length) await db.cursos.bulkPut(cursosSanitizados);
-      }
-      const existentes = await db.cursos.toArray();
-      const r = convertirFormatoPlano(data.clases || [], data.tareas || [], existentes, []);
-      if (r.cursosNuevos.length) await db.cursos.bulkPut(r.cursosNuevos);
-      if (r.clases.length) await db.clases.bulkPut(r.clases);
-      if (r.tareas.length) await db.tareas.bulkPut(r.tareas);
-
-      if (Array.isArray(data.eventos) && data.eventos.length) {
-        await db.eventos.bulkPut(data.eventos);
-      }
-      if (Array.isArray(data.asistencia) && data.asistencia.length) {
-        await db.asistencia.bulkPut(data.asistencia);
-      }
-      if (Array.isArray(data.excepciones) && data.excepciones.length) {
-        await db.excepciones.bulkPut(data.excepciones);
-      }
-      if (Array.isArray(data.ajustes) && data.ajustes.length) {
-        await db.ajustes.bulkPut(data.ajustes);
-      }
-    });
+    await applyBackupPayload(data);
 
     showToast("Copia de seguridad restaurada.");
     await cargarAjustesUI();
     switchTab("view-hoy");
+    if (typeof scheduleUmbralCloudPush === "function") scheduleUmbralCloudPush();
   } catch (err) {
     console.error(err);
     showToast("Error al restaurar: " + err.message, true);
   }
+}
+
+let umbralCloudPushTimer = null;
+let isApplyingRemoteUmbral = false;
+
+function refreshCloudBadgeUI(customLabel) {
+  const pill = $("#btn-cloud-pill");
+  const lbl = $("#cloud-header-label");
+  if (!pill || !lbl || typeof UNUmbralCloudSync === "undefined") return;
+  const cfg = UNUmbralCloudSync.getCloudConfig();
+  const ok = UNUmbralCloudSync.isCloudConfigured(cfg);
+  pill.classList.toggle("is-live", ok);
+  lbl.textContent = customLabel || (ok ? `Nube · ${cfg.spaceCode}` : "Local");
+}
+
+function cargarSupabaseAjustesUI() {
+  if (typeof UNUmbralCloudSync === "undefined") return;
+  const cfg = UNUmbralCloudSync.getCloudConfig();
+  const setV = (id, v) => { const el = $(id); if (el) el.value = v || ""; };
+  setV("#sb-url", cfg.supabaseUrl);
+  setV("#sb-key", cfg.supabaseAnonKey);
+  setV("#sb-space", cfg.spaceCode);
+  const autoEl = $("#sb-auto");
+  if (autoEl) autoEl.checked = cfg.autoSync !== false;
+  const stEl = $("#sb-status-text");
+  if (stEl) {
+    const lastTs = UNUmbralCloudSync.getLastCloudSyncAt();
+    stEl.textContent = UNUmbralCloudSync.isCloudConfigured(cfg)
+      ? `Conectado al espacio «${cfg.spaceCode}»${lastTs ? ` · Último sync: ${new Date(lastTs).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}` : ""}`
+      : "Solo almacenamiento local (IndexedDB). Pega tu URL y Anon Key o usa «Pegar llave rápida» desde el Directorio.";
+  }
+  refreshCloudBadgeUI();
+}
+
+async function pushUmbralToCloud(manual = false) {
+  if (typeof UNUmbralCloudSync === "undefined") return { ok: false, message: "Módulo de nube no disponible." };
+  const cfg = UNUmbralCloudSync.getCloudConfig();
+  if (!UNUmbralCloudSync.isCloudConfigured(cfg)) {
+    return { ok: false, message: "Completa URL, Anon Key y código de espacio." };
+  }
+  if (!manual && !cfg.autoSync) return { ok: false, message: "Auto-sync desactivado." };
+  const payload = await buildFullBackupPayload();
+  const res = await UNUmbralCloudSync.pushEcosystemScope("unumbral_backup", payload, Date.now());
+  refreshCloudBadgeUI();
+  const stEl = $("#sb-status-text");
+  if (stEl && manual) stEl.textContent = res.message;
+  return res;
+}
+
+async function pullUmbralFromCloud(force = false) {
+  if (typeof UNUmbralCloudSync === "undefined") return { ok: false, message: "Módulo de nube no disponible." };
+  const cfg = UNUmbralCloudSync.getCloudConfig();
+  if (!UNUmbralCloudSync.isCloudConfigured(cfg)) {
+    return { ok: false, message: "Configura Supabase primero." };
+  }
+  const res = await UNUmbralCloudSync.pullEcosystemScope("unumbral_backup");
+  if (!res.ok || !res.row || !res.row.payload) {
+    const stEl = $("#sb-status-text");
+    if (stEl && force) stEl.textContent = res.message;
+    return res;
+  }
+  const remoteTs = Number(res.row.updated_at) || 0;
+  const localTs = UNUmbralCloudSync.getLastCloudSyncAt();
+  const localCourses = await db.cursos.count().catch(() => 0);
+  const localClasses = await db.clases.count().catch(() => 0);
+  const localEmpty = localCourses === 0 && localClasses === 0;
+
+  if (force || localEmpty || remoteTs > localTs) {
+    isApplyingRemoteUmbral = true;
+    try {
+      await applyBackupPayload(res.row.payload);
+      UNUmbralCloudSync.setLastCloudSyncAt(remoteTs || Date.now());
+      await cargarAjustesUI();
+      if (state.currentTab === "view-hoy") renderHoy();
+      else if (state.currentTab === "view-horario") renderHorario();
+      else if (state.currentTab === "view-cursos") renderCursos();
+      else if (state.currentTab === "view-tareas") renderTareas();
+      const stEl = $("#sb-status-text");
+      if (stEl) stEl.textContent = `Datos restaurados desde Supabase («${cfg.spaceCode}»).`;
+      if (force) showToast("Datos sincronizados desde Supabase.");
+    } finally {
+      isApplyingRemoteUmbral = false;
+    }
+  }
+  refreshCloudBadgeUI();
+  return res;
+}
+
+function scheduleUmbralCloudPush() {
+  if (isApplyingRemoteUmbral || typeof UNUmbralCloudSync === "undefined") return;
+  const cfg = UNUmbralCloudSync.getCloudConfig();
+  if (!UNUmbralCloudSync.isCloudConfigured(cfg) || !cfg.autoSync) return;
+  clearTimeout(umbralCloudPushTimer);
+  umbralCloudPushTimer = setTimeout(() => {
+    void pushUmbralToCloud(false);
+  }, 900);
+}
+
+function wireDbCloudHooks() {
+  if (!db) return;
+  ["ciclos", "cursos", "clases", "tareas", "eventos", "asistencia", "excepciones", "ajustes"].forEach((tbl) => {
+    const t = db[tbl];
+    if (t && typeof t.hook === "function") {
+      t.hook("creating", () => scheduleUmbralCloudPush());
+      t.hook("updating", () => scheduleUmbralCloudPush());
+      t.hook("deleting", () => scheduleUmbralCloudPush());
+    }
+  });
 }
 
 async function loadDemoSemester() {
@@ -7480,6 +7603,70 @@ function wireSettingsEvents() {
   if (btnSaveAjustes) {
     btnSaveAjustes.addEventListener("click", guardarAjustesUI);
   }
+
+  const btnCloudPill = $("#btn-cloud-pill");
+  if (btnCloudPill) {
+    btnCloudPill.addEventListener("click", () => {
+      switchTab("view-ajustes");
+      const sec = $("#sec-supabase-sync");
+      if (sec) sec.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  const btnSbSave = $("#btn-sb-save-sync");
+  if (btnSbSave) {
+    btnSbSave.addEventListener("click", async () => {
+      if (typeof UNUmbralCloudSync === "undefined") return;
+      UNUmbralCloudSync.saveCloudConfig({
+        supabaseUrl: ($("#sb-url") && $("#sb-url").value) || "",
+        supabaseAnonKey: ($("#sb-key") && $("#sb-key").value) || "",
+        spaceCode: ($("#sb-space") && $("#sb-space").value) || "mi-espacio",
+        autoSync: $("#sb-auto") ? $("#sb-auto").checked : true
+      });
+      cargarSupabaseAjustesUI();
+      const res = await pushUmbralToCloud(true);
+      showToast(res.message, !res.ok);
+    });
+  }
+
+  const btnSbPull = $("#btn-sb-pull");
+  if (btnSbPull) {
+    btnSbPull.addEventListener("click", async () => {
+      const res = await pullUmbralFromCloud(true);
+      if (!res.ok) showToast(res.message, true);
+    });
+  }
+
+  const btnSbPaste = $("#btn-sb-paste-token");
+  if (btnSbPaste) {
+    btnSbPaste.addEventListener("click", async () => {
+      if (typeof UNUmbralCloudSync === "undefined") return;
+      const raw = window.prompt("Pega la llave rápida JSON copiada desde el Directorio:");
+      if (!raw) return;
+      if (UNUmbralCloudSync.importCloudToken(raw)) {
+        cargarSupabaseAjustesUI();
+        const res = await pullUmbralFromCloud(true);
+        if (!res.row) await pushUmbralToCloud(true);
+        showToast("Configuración de Supabase aplicada.");
+      } else {
+        showToast("La llave rápida no es válida.", true);
+      }
+    });
+  }
+
+  const btnExpJson = $("#btn-export-backup-json");
+  if (btnExpJson) {
+    btnExpJson.addEventListener("click", exportFullBackup);
+  }
+
+  const inpImpJson = $("#input-import-backup-json");
+  if (inpImpJson) {
+    inpImpJson.addEventListener("change", (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (f) importFullBackup(f);
+      e.target.value = "";
+    });
+  }
 }
 
 function wireAttendanceAndModalEvents() {
@@ -7782,12 +7969,17 @@ async function init() {
 
   try {
     wireGlobalEvents();
+    wireDbCloudHooks();
+    refreshCloudBadgeUI();
     await cargarPerfilEstudiante();
   } catch (err) {
     console.error("Error en wireGlobalEvents:", err);
   }
   switchTab("view-hoy");
   inicializarDeepLinks();
+  if (typeof pullUmbralFromCloud === "function") {
+    pullUmbralFromCloud(false).catch(() => {});
+  }
 
   if (typeof inicializarSistemaNotificaciones === "function") {
     inicializarSistemaNotificaciones().catch(err => console.warn("Error inicializando notificaciones:", err));

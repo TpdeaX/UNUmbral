@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://*.supabase.co;">
   <meta name="theme-color" content="#F4F6EE">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -49,8 +49,14 @@
   <!-- BARRA SUPERIOR -->
   <header class="top-header">
     <div class="brand">
-      <div class="brand-badge" aria-hidden="true">
-        <img src="icon-64.png" alt="UNUmbral logo" width="30" height="30" class="brand-logo-img">
+      <a id="eco-link-directorio" class="eco-dir-btn" href="../atelier-diario/" title="Volver al Directorio del Ecosistema">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        <span>Directorio</span>
+      </a>
+      <div class="brand-diamond" aria-hidden="true">
+        <div class="brand-badge">
+          <img src="icon-64.png" alt="UNUmbral logo" width="24" height="24" class="brand-logo-img">
+        </div>
       </div>
       <div>
         <h1 class="brand-title">UNUmbral</h1>
@@ -59,6 +65,11 @@
     </div>
 
     <div class="header-actions">
+      <button id="btn-cloud-pill" class="cloud-header-pill" type="button" title="Sincronización Supabase">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
+        <span id="cloud-header-label">Local</span>
+      </button>
+
       <button id="btn-theme-toggle" class="icon-btn" aria-label="Cambiar tema claro u oscuro" title="Cambiar tema">
         <svg id="theme-icon-sun" class="hidden" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="5"></circle>
@@ -680,6 +691,49 @@
       </div>
 
       
+
+      <!-- Nube Supabase y Respaldo Completo -->
+      <div class="section-header" style="margin-top: 28px;" id="sec-supabase-sync">
+        <div>
+          <h2 class="section-title">Nube Supabase y Respaldo</h2>
+          <p class="section-subtitle">Sincroniza tus cursos, horario, notas, tareas, asistencias y ajustes entre dispositivos</p>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label" for="sb-url">Supabase Project URL</label>
+            <input type="url" id="sb-url" class="field" placeholder="https://tuproyecto.supabase.co" autocomplete="off">
+          </div>
+          <div class="form-group" style="width: 190px;">
+            <label class="form-label" for="sb-space">Código de espacio</label>
+            <input type="text" id="sb-space" class="field" placeholder="mi-espacio" autocomplete="off">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 10px;">
+          <label class="form-label" for="sb-key">Supabase Anon Public Key</label>
+          <input type="text" id="sb-key" class="field" placeholder="eyJhbGciOi..." autocomplete="off">
+        </div>
+        <label class="settings-toggle-item" style="margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border-hairline);">
+          <div>
+            <strong>Auto-guardar cambios en Supabase</strong>
+            <p>Cada modificación en cursos, notas, horario o tareas se sube automáticamente.</p>
+          </div>
+          <input type="checkbox" id="sb-auto" class="toggle-checkbox" checked>
+        </label>
+        <p id="sb-status-text" style="margin-top: 10px; font-size: 12.5px; color: var(--text-secondary);">Solo almacenamiento local (IndexedDB).</p>
+        <div class="settings-card-actions" style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px;">
+          <button type="button" id="btn-sb-save-sync" class="btn-primary btn-sm">Guardar y subir ahora</button>
+          <button type="button" id="btn-sb-pull" class="btn-secondary btn-sm">Traer desde nube</button>
+          <button type="button" id="btn-sb-paste-token" class="btn-secondary btn-sm">Pegar llave rápida</button>
+          <button type="button" id="btn-export-backup-json" class="btn-secondary btn-sm">Exportar .json</button>
+          <label class="btn-secondary btn-sm" style="cursor:pointer;">
+            <span>Importar .json</span>
+            <input type="file" id="input-import-backup-json" accept=".json,application/json" style="display:none;">
+          </label>
+        </div>
+      </div>
 
       <!-- Demo Semestre Universitario -->
       <div class="section-header" style="margin-top: 28px;">
@@ -1660,6 +1714,7 @@
 <script defer src="lib/views/cursosView.js"></script>
 <script defer src="lib/views/tareasView.js"></script>
 <script defer src="lib/focusTimer.js"></script>
+<script defer src="lib/supabaseSync.js"></script>
 <script defer src="app.js"></script>
 
 <!-- MODAL DE POLÍTICA DE PRIVACIDAD LOCAL -->
