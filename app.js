@@ -2129,6 +2129,7 @@ async function confirmarArchivarCiclo(ciclo) {
   if (!ok) return;
 
   await db.ciclos.update(ciclo.id, { estado: "archivado", fecha_archivado: new Date().toISOString() });
+  try { localStorage.setItem("unumbral_skip_auto_preset_2026_2", "1"); } catch {}
 
   showToast(`Ciclo "${ciclo.nombre}" archivado. Horario semanal reiniciado.`);
   if (typeof reprogramarTodo === "function") reprogramarTodo();
@@ -6412,9 +6413,11 @@ async function cargarMiHorario2026II(opts = {}) {
     ? construirHorario2026II
     : window.UNUMiHorario2026II?.construirHorario2026II;
   if (!builder) {
-    showToast("Plantilla de horario 2026-II no disponible.", true);
+    if (!opts.silencioso) showToast("Plantilla de horario 2026-II no disponible.", true);
     return;
   }
+
+  try { localStorage.removeItem("unumbral_skip_auto_preset_2026_2"); } catch {}
 
   const cursosActuales = await db.cursos.toArray();
   const clasesActuales = await db.clases.toArray();
@@ -6480,8 +6483,14 @@ async function cargarMiHorario2026II(opts = {}) {
 
   if (typeof reprogramarTodo === "function") reprogramarTodo();
   if (typeof scheduleUmbralCloudPush === "function") scheduleUmbralCloudPush();
-  showToast(`Horario 2026-II cargado (${cursosParaGuardar.length} cursos, ${clasesParaGuardar.length} sesiones).`);
-  switchTab("view-horario");
+  if (!opts.silencioso) {
+    showToast(`Horario 2026-II cargado (${cursosParaGuardar.length} cursos, ${clasesParaGuardar.length} sesiones).`);
+  }
+  if (opts.stayInCurrentTab) {
+    if (typeof refrescarVistaActual === "function") refrescarVistaActual();
+  } else {
+    switchTab("view-horario");
+  }
 }
 
 async function loadDemoSemester() {
@@ -8241,9 +8250,26 @@ async function init() {
   }
   switchTab("view-hoy");
   inicializarDeepLinks();
-  if (typeof pullUmbralFromCloud === "function") {
-    pullUmbralFromCloud(false).catch(() => {});
-  }
+  (async () => {
+    if (typeof pullUmbralFromCloud === "function") {
+      await pullUmbralFromCloud(false).catch(() => {});
+    }
+    try {
+      const skipAuto = localStorage.getItem("unumbral_skip_auto_preset_2026_2") === "1";
+      if (!skipAuto) {
+        const [totalCursos, totalClases] = await Promise.all([db.cursos.count(), db.clases.count()]);
+        if (totalCursos === 0 && totalClases === 0) {
+          await cargarMiHorario2026II({
+            confirmarSiTieneDatos: false,
+            silencioso: true,
+            stayInCurrentTab: true
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Aviso en auto-carga horario 2026-II:", e);
+    }
+  })();
 
   if (typeof inicializarSistemaNotificaciones === "function") {
     inicializarSistemaNotificaciones().catch(err => console.warn("Error inicializando notificaciones:", err));
