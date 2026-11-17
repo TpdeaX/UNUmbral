@@ -1,5 +1,5 @@
 // Service Worker para funcionamiento 100% offline con actualización en segundo plano
-const CACHE_NAME = "unumbral-tpdeax-v1";
+const CACHE_NAME = "unumbral-tpdeax-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -11,6 +11,7 @@ const ASSETS = [
   "./icon-512.png",
   "./icon.png",
   "./lib/dexie.min.js",
+  "./lib/supabaseSync.js",
   "./lib/plataforma.js",
   "./lib/ajustes.js",
   "./lib/planificador.js",
@@ -53,19 +54,17 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
+  const reqUrl = new URL(e.request.url);
+  if (reqUrl.origin !== self.location.origin) return;
   e.respondWith(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.match(e.request).then((cached) => {
-        const networkFetch = fetch(e.request)
-          .then((response) => {
-            if (response && response.status === 200 && response.type === "basic") {
-              cache.put(e.request, response.clone());
-            }
-            return response;
-          })
-          .catch(() => cached);
-        return cached || networkFetch;
-      });
-    })
+    fetch(e.request)
+      .then((response) => {
+        if (response && response.status === 200) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(e.request).then((cached) => cached || caches.match("./index.html")))
   );
 });
