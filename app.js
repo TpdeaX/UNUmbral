@@ -1290,6 +1290,8 @@ async function renderHoy() {
 
   const esFeriadoHoy = verificarEsDiaFeriado(fechaHoyStr, excepciones);
   const holidayBannerEl = $("#today-holiday-banner");
+  const btnMarcarFeriado = $("#btn-marcar-feriado-hoy");
+  if (btnMarcarFeriado) btnMarcarFeriado.classList.toggle("hidden", esFeriadoHoy);
   if (holidayBannerEl) {
     if (esFeriadoHoy) {
       const fer = excepciones.find(e => e.fecha === fechaHoyStr && e.tipo === "feriado");
