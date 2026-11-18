@@ -1,5 +1,5 @@
 // Service Worker para funcionamiento 100% offline con actualización en segundo plano y notificaciones PWA
-const CACHE_NAME = "unumbral-tpdeax-v5";
+const CACHE_NAME = "unumbral-tpdeax-v6";
 const ASSETS = [
   "./",
   "./index.html",

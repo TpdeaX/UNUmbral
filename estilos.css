@@ -91,6 +91,7 @@
   --shadow-lg:   0 12px 28px rgba(25, 38, 28, 0.08), 0 2px 6px rgba(25, 38, 28, 0.04);
 
   /* Dimensiones */
+  --eco-bar-height: 40px;
   --header-height: 58px;
   --nav-height:    66px;
   --max-width:     640px;
@@ -195,6 +196,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
   background: var(--chrome-bg);
   backdrop-filter: blur(24px) saturate(190%);
   -webkit-backdrop-filter: blur(24px) saturate(190%);
@@ -207,6 +210,11 @@ html, body {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+}
+
+.brand > div {
+  min-width: 0;
 }
 
 .brand-badge {
@@ -245,12 +253,16 @@ html, body {
   display: block;
   font-weight: 500;
   letter-spacing: -0.01em;
-  }
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .header-actions {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 /* =====================================================================
@@ -4077,11 +4089,11 @@ button:active, .btn-primary:active, .btn-secondary:active, .btn-danger:active {
   /* SIDEBAR DE ESCRITORIO (sustituye a la barra inferior flotante) */
   .bottom-nav {
     position: fixed;
-    top: 0;
+    top: var(--eco-bar-height, 40px);
     left: 0;
     bottom: 0;
     width: var(--sidebar-width);
-    height: 100vh;
+    height: calc(100vh - var(--eco-bar-height, 40px));
     max-width: var(--sidebar-width);
     margin: 0;
     padding: 20px 14px 20px 14px;
@@ -4181,7 +4193,7 @@ button:active, .btn-primary:active, .btn-secondary:active, .btn-danger:active {
   /* Posicionamiento del Header superior en escritorio */
   .top-header {
     position: fixed;
-    top: 0;
+    top: var(--eco-bar-height, 40px);
     left: var(--sidebar-width);
     right: 0;
     width: calc(100% - var(--sidebar-width));
@@ -4199,10 +4211,10 @@ button:active, .btn-primary:active, .btn-secondary:active, .btn-danger:active {
   /* Área principal desplazable en escritorio */
   .main-content {
     margin-left: var(--sidebar-width);
-    margin-top: var(--header-height);
+    margin-top: calc(var(--header-height) + var(--eco-bar-height, 40px));
     width: calc(100% - var(--sidebar-width));
     max-width: 1180px;
-    height: calc(100vh - var(--header-height));
+    height: calc(100vh - var(--header-height) - var(--eco-bar-height, 40px));
     padding: 32px 40px 60px 40px;
     padding-bottom: 60px;
     overflow-y: auto;
@@ -6116,6 +6128,16 @@ html.theme-transitioning .modal-sheet {
 }
 
 @media (max-width: 480px) {
+  .top-header {
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .brand {
+    gap: 8px;
+  }
+  .header-actions {
+    gap: 5px;
+  }
   .eco-dir-btn span {
     display: none;
   }
@@ -6123,7 +6145,13 @@ html.theme-transitioning .modal-sheet {
     padding: 4px 8px;
     font-size: 11px;
   }
-  .theme-toggle-btn {
+  #cloud-header-label {
+    max-width: 68px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .top-header .theme-toggle-btn {
     padding: 0 8px;
     font-size: 11px;
   }
@@ -6211,6 +6239,25 @@ html.theme-transitioning .modal-sheet {
   }
   .eco-label-short {
     display: inline;
+  }
+}
+
+@media (min-width: 960px) {
+  .eco-switch {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: var(--eco-bar-height, 40px);
+    min-height: var(--eco-bar-height, 40px);
+    padding: 0 16px;
+    justify-content: center;
+    z-index: 45;
+  }
+  .eco-switch-link {
+    min-height: 32px;
+    padding: 4px 12px;
   }
 }
 
