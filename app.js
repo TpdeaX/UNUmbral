@@ -630,7 +630,7 @@ const state = {
   calendarMonth: new Date().getMonth() + 1,
   selectedCalDate: null,
   matrixCompact: localStorage.getItem("umbral-matrix-compact") !== "false",
-  theme: localStorage.getItem("umbral-theme") || localStorage.getItem("uniflow-theme") || "light",
+  theme: (typeof UNUmbralEcosistema !== "undefined" ? UNUmbralEcosistema.readStoredEcoTheme() : (localStorage.getItem("umbral-theme") || localStorage.getItem("uniflow-theme") || "light")),
   // Si el modal de curso se abrió desde el formulario de clase, al guardar se vuelve a él
   cursoModalOrigin: null // null | "clase" | { abrirClase: true, dia: "LUNES" }
 };
@@ -1058,24 +1058,33 @@ async function actualizarBadgeNativo(count) {
    5. GESTIÓN DEL TEMA (DESIGN RICRA LIGHT / DARK)
    ===================================================================== */
 function applyTheme(theme) {
-  state.theme = theme;
-  document.documentElement.setAttribute("data-theme", theme);
-  localStorage.setItem("umbral-theme", theme);
-  localStorage.setItem("uniflow-theme", theme);
+  const norm = typeof UNUmbralEcosistema !== "undefined"
+    ? (UNUmbralEcosistema.normalizeEcoTheme(theme) || "light")
+    : (theme === "dark" || theme === "night" ? "dark" : "light");
+  state.theme = norm;
+  document.documentElement.setAttribute("data-theme", norm);
+  localStorage.setItem("umbral-theme", norm);
+  localStorage.setItem("uniflow-theme", norm);
 
-  if (theme === "dark") {
+  if (norm === "dark") {
     if ($("#theme-icon-sun")) $("#theme-icon-sun").classList.remove("hidden");
     if ($("#theme-icon-moon")) $("#theme-icon-moon").classList.add("hidden");
+    if ($("#theme-toggle-label")) $("#theme-toggle-label").textContent = "Claro";
     if ($('meta[name="theme-color"]')) $('meta[name="theme-color"]').setAttribute("content", "#0D140F");
   } else {
     if ($("#theme-icon-sun")) $("#theme-icon-sun").classList.add("hidden");
     if ($("#theme-icon-moon")) $("#theme-icon-moon").classList.remove("hidden");
+    if ($("#theme-toggle-label")) $("#theme-toggle-label").textContent = "Oscuro";
     if ($('meta[name="theme-color"]')) $('meta[name="theme-color"]').setAttribute("content", "#F4F6EE");
   }
 
   const darkToggle = $("#ajuste-modo-oscuro-toggle");
   if (darkToggle) {
-    darkToggle.checked = (theme === "dark");
+    darkToggle.checked = (norm === "dark");
+  }
+
+  if (typeof UNUmbralEcosistema !== "undefined") {
+    UNUmbralEcosistema.updateEcoSwitchLinks(document, "unumbral", { theme: norm });
   }
 }
 
@@ -6396,14 +6405,46 @@ function scheduleUmbralCloudPush() {
   }, 900);
 }
 
+let umbralEcoSnapTimer = null;
+async function syncUmbralEcoSnapshot() {
+  if (typeof UNUmbralEcosistema === "undefined" || !db) return;
+  try {
+    const todayKey = getTodayDayKey();
+    const [cursos, tareas, clases, ciclos] = await Promise.all([
+      db.cursos.toArray().catch(() => []),
+      db.tareas.toArray().catch(() => []),
+      db.clases.toArray().catch(() => []),
+      db.ciclos.toArray().catch(() => [])
+    ]);
+    const pendingTasks = tareas.filter((t) => !t.completada).length;
+    const todayClasses = clases.filter((c) => c.dia_semana === todayKey).length;
+    UNUmbralEcosistema.writeUmbralSnapshot({
+      coursesCount: cursos.length,
+      pendingTasks,
+      todayClasses,
+      cyclesCount: ciclos.length,
+      updatedAt: Date.now()
+    });
+  } catch {
+    // Ignore snapshot errors
+  }
+}
+
+function scheduleUmbralEcoSnapshot() {
+  clearTimeout(umbralEcoSnapTimer);
+  umbralEcoSnapTimer = setTimeout(() => {
+    void syncUmbralEcoSnapshot();
+  }, 250);
+}
+
 function wireDbCloudHooks() {
   if (!db) return;
   ["ciclos", "cursos", "clases", "tareas", "eventos", "asistencia", "excepciones", "ajustes"].forEach((tbl) => {
     const t = db[tbl];
     if (t && typeof t.hook === "function") {
-      t.hook("creating", () => scheduleUmbralCloudPush());
-      t.hook("updating", () => scheduleUmbralCloudPush());
-      t.hook("deleting", () => scheduleUmbralCloudPush());
+      t.hook("creating", () => { scheduleUmbralCloudPush(); scheduleUmbralEcoSnapshot(); });
+      t.hook("updating", () => { scheduleUmbralCloudPush(); scheduleUmbralEcoSnapshot(); });
+      t.hook("deleting", () => { scheduleUmbralCloudPush(); scheduleUmbralEcoSnapshot(); });
     }
   });
 }
@@ -8210,7 +8251,27 @@ function inicializarDeepLinks() {
    14. INICIALIZACIÓN
    ===================================================================== */
 async function init() {
+  if (typeof UNUmbralEcosistema !== "undefined") {
+    state.theme = UNUmbralEcosistema.applyIncomingEcoTheme();
+  }
   applyTheme(state.theme);
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("storage", (e) => {
+      if (e.key === "umbral-theme" && typeof UNUmbralEcosistema !== "undefined") {
+        const next = UNUmbralEcosistema.readStoredEcoTheme();
+        if (next !== state.theme) applyTheme(next);
+      }
+    });
+  }
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && typeof UNUmbralEcosistema !== "undefined") {
+        const next = UNUmbralEcosistema.readStoredEcoTheme();
+        if (next !== state.theme) applyTheme(next);
+      }
+    });
+  }
 
   const dateEl = $("#current-date-label");
   if (dateEl) dateEl.textContent = formatReadableDate();
@@ -8250,10 +8311,12 @@ async function init() {
   }
   switchTab("view-hoy");
   inicializarDeepLinks();
+  void syncUmbralEcoSnapshot();
   (async () => {
     if (typeof pullUmbralFromCloud === "function") {
       await pullUmbralFromCloud(false).catch(() => {});
     }
+    void syncUmbralEcoSnapshot();
     try {
       const skipAuto = localStorage.getItem("unumbral_skip_auto_preset_2026_2") === "1";
       if (!skipAuto) {

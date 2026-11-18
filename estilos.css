@@ -6116,10 +6116,111 @@ html.theme-transitioning .modal-sheet {
 }
 
 @media (max-width: 480px) {
-  .eco-dir-btn span,
-  .cloud-header-pill span {
+  .eco-dir-btn span {
     display: none;
   }
+  .cloud-header-pill {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  .theme-toggle-btn {
+    padding: 0 8px;
+    font-size: 11px;
+  }
+}
+
+/* =====================================================================
+   BARRA SWITCHER DEL ECOSISTEMA (.eco-switch)
+   ===================================================================== */
+.eco-switch {
+  --eco-bg: var(--chrome-bg);
+  --eco-ink: var(--text-primary);
+  --eco-ink-muted: var(--text-secondary);
+  --eco-accent: var(--accent);
+  --eco-accent-ink: var(--accent-contrast);
+  --eco-border: var(--border-hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: calc(40px + env(safe-area-inset-top, 0px));
+  padding: env(safe-area-inset-top, 0px) 12px 0;
+  background: var(--eco-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--eco-border);
+  overflow-x: auto;
+  flex-shrink: 0;
+  scrollbar-width: none;
+  z-index: 26;
+}
+
+.eco-switch::-webkit-scrollbar {
+  display: none;
+}
+
+.eco-switch-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  min-width: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  color: var(--eco-ink-muted);
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.eco-switch-link:hover {
+  color: var(--eco-ink);
+  background: var(--surface-subtle);
+}
+
+.eco-switch-link:focus-visible {
+  outline: 2px solid var(--eco-accent);
+  outline-offset: -2px;
+}
+
+.eco-switch-link.is-current {
+  background: var(--eco-accent);
+  color: var(--eco-accent-ink);
+}
+
+.eco-label-short {
+  display: none;
+}
+
+@media (max-width: 420px) {
+  .eco-switch {
+    justify-content: flex-start;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .eco-switch-link {
+    padding: 0 10px;
+    font-size: 12px;
+  }
+  .eco-label-full {
+    display: none;
+  }
+  .eco-label-short {
+    display: inline;
+  }
+}
+
+.theme-toggle-btn {
+  width: auto !important;
+  min-width: 40px;
+  padding: 0 10px;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 /* =====================================================================
