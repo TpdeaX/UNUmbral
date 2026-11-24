@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://*.supabase.co;">
   <meta name="theme-color" content="#F4F6EE">
+  <meta name="color-scheme" content="light dark">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="author" content="Té Verde">
@@ -49,19 +53,19 @@
   <!-- BARRA SWITCHER DEL ECOSISTEMA -->
   <nav class="eco-switch" aria-label="Aplicaciones del ecosistema">
     <a class="eco-switch-link" data-eco-app="directorio" href="../directorio/">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+      <span class="eco-swatch is-dir" aria-hidden="true"></span>
       <span class="eco-label-full">Directorio</span><span class="eco-label-short">Directorio</span>
     </a>
     <a class="eco-switch-link" data-eco-app="atelier" href="../atelier-diario/">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+      <span class="eco-swatch is-atelier" aria-hidden="true"></span>
       <span class="eco-label-full">Atelier Diario</span><span class="eco-label-short">Atelier</span>
     </a>
     <a class="eco-switch-link is-current" data-eco-app="unumbral" aria-current="page" href="./">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5"></path></svg>
+      <span class="eco-swatch is-unu" aria-hidden="true"></span>
       <span class="eco-label-full">UNUmbral</span><span class="eco-label-short">UNUmbral</span>
     </a>
     <a class="eco-switch-link" data-eco-app="arena" href="../omni-arena/">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 21 7 21 17 12 22 3 17 3 7"></polygon><circle cx="12" cy="12" r="3"></circle></svg>
+      <span class="eco-swatch is-arena" aria-hidden="true"></span>
       <span class="eco-label-full">OMNI ARENA</span><span class="eco-label-short">Arena</span>
     </a>
   </nav>

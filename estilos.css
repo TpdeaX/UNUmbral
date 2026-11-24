@@ -1,149 +1,167 @@
 /* =====================================================================
-   DESIGN RICRA + APPLE HUMAN INTERFACE DESIGN (TEA GREEN)
-   UNUmbral — Horario Universitario, Cursos, Notas & Tareas Offline
-   Estética Apple: Materiales translúcidos (vibrancy/blur), spring physics,
-   tipografía óptica, listas agrupadas (inset groups) y cero emojis.
+   OMNI ECOSISTEMA — CURSO ISOM DESIGN SYSTEM (UNUmbral)
+   Organizador Universitario Offline-First — Horario, Cursos, Notas y Tareas
    ===================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
-
-/* --- TOKENS TEMA CLARO (DESIGN RICRA · TEA GREEN + APPLE PHYSICS) --- */
+/* --- TOKENS TEMA CLARO (CURSO ISOM · TERRENO LIMPIO + PÚRPURA DE CURSO) --- */
 :root {
-  /* Marca Ricra Oficial */
-  --tea-green:       #AFC49A;
-  --forest-green:    #294635;
-  --primary:         #294635;
-  --forest-shadow:   #294635;
-  --deep-leaf:       #4F7256;
-  --sage-green:      #829B78;
-  --light-matcha:    #DDE8C8;
-  --accent-teal:     #337652;
+  color-scheme: light;
 
-  /* Superficies Planas y Limpias (Estilo Ricra) */
-  --bg:              #F7F8F1;
+  /* Dominio ISOM UNUmbral (Oliva) y Curso Activo (Púrpura) */
+  --isom-course:       #7B2CBF;
+  --isom-course-hover: #6721A4;
+  --isom-course-ink:   #FFFFFF;
+  --isom-course-soft:  #F5ECFE;
+  --domain-atelier-swatch: #C89D3C;
+  --domain-unu-swatch:     #4D6B4A;
+  --domain-unu-bg:         #E8F0E5;
+  --domain-unu-ink:        #2D4C2A;
+  --domain-arena-swatch:   #335C7D;
+
+  --tea-green:       #A5B36A;
+  --forest-green:    #3D5E3A;
+  --primary:         #7B2CBF;
+  --forest-shadow:   #2D4C2A;
+  --deep-leaf:       #4D6B4A;
+  --sage-green:      #758F6D;
+  --light-matcha:    #E8F0E5;
+  --accent-teal:     #2D6A4F;
+
+  /* Superficies Planas y Nítidas (ISOM) */
+  --bg:              #FAFBF8;
   --bg-gradient:     none;
   --surface:         #FFFFFF;
   --surface-card:    #FFFFFF;
   --surface-solid:   #FFFFFF;
-  --surface-subtle:  #EEF2E8;
-  --surface-hover:   #E8ECE2;
-  --surface-active:  #E0E7D8;
-  --chrome-bg:       rgba(247, 248, 241, 0.94);
+  --surface-subtle:  #F3F5F0;
+  --surface-hover:   #EDF1EA;
+  --surface-active:  #E4EAE0;
+  --chrome-bg:       #FFFFFF;
 
   /* Superficies Parrilla Horario */
-  --matrix-header-bg:   #EEF2E8;
-  --matrix-header-text: #1E2A21;
-  --matrix-corner-bg:   #E2E8DC;
-  --matrix-hour-bg:     #F7F8F1;
-  --matrix-hour-border: #D9E2D5;
+  --matrix-header-bg:   #F3F5F0;
+  --matrix-header-text: #182019;
+  --matrix-corner-bg:   #EDF1EA;
+  --matrix-hour-bg:     #FAFBF8;
+  --matrix-hour-border: #D8DFD4;
 
-  /* Texto y jerarquía Ricra */
-  --text-primary:    #1E2A21;
-  --text-secondary:  #5E6E5F;
-  --text-tertiary:   #889886;
-  --text-quaternary: #A8B8A9;
+  /* Texto y jerarquía ISOM */
+  --text-primary:    #182019;
+  --text-secondary:  #445247;
+  --text-tertiary:   #5D6D61;
+  --text-quaternary: #87968A;
 
   /* Bordes nítidos de 1px */
-  --border-hairline: #D9E2D5;
-  --border-subtle:   #D9E2D5;
-  --border-focus:    #567B3B;
+  --border-hairline: #D8DFD4;
+  --border-subtle:   #D8DFD4;
+  --border-focus:    #7B2CBF;
 
-  /* Acento e interactividad */
-  --accent:          #294635;
+  /* Acento e interactividad (Púrpura de Curso) */
+  --accent:          #7B2CBF;
   --accent-contrast: #FFFFFF;
-  --accent-subtle:   #EEF2E8;
-  --accent-tint:     #AFC49A;
+  --accent-subtle:   #F5ECFE;
+  --accent-tint:     #C084FC;
 
   /* Estados funcionales */
-  --status-success:     #337652;
-  --status-success-bg:  #E8F2EC;
-  --status-warning:     #976719;
-  --status-warning-bg:  #FAF2E6;
-  --status-danger:      #B44743;
-  --status-danger-bg:   #FCEEEF;
-  --status-info:        #3F7082;
-  --status-info-bg:     #EBF4F7;
+  --status-success:     #2D6A4F;
+  --status-success-bg:  #E7F4ED;
+  --status-warning:     #9A5B0C;
+  --status-warning-bg:  #FEF3DC;
+  --status-danger:      #B91C1C;
+  --status-danger-bg:   #FEECEC;
+  --status-info:        #245B82;
+  --status-info-bg:     #E6F1F8;
 
-  /* Curvas y físicas suaves estilo Apple iOS */
+  /* Curvas y físicas suaves */
   --ease-apple-spring:  cubic-bezier(0.32, 0.72, 0, 1);
   --ease-apple-bounce:  cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-apple-press:   cubic-bezier(0.2, 0.9, 0.4, 1);
   --ease-apple-smooth:  cubic-bezier(0.16, 1, 0.3, 1);
 
+  /* Tipografía unificada Curso ISOM */
+  --font-display: "Archivo", system-ui, -apple-system, sans-serif;
+  --font-text:    "Source Sans 3", system-ui, -apple-system, sans-serif;
+  --font-mono:    "JetBrains Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
 
-
-  /* Tipografía nativa del sistema Apple */
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, -system-ui, "Inter", sans-serif;
-  --font-text:    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", system-ui, -system-ui, "Inter", sans-serif;
-  --font-mono:    ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
-
-  /* Sistema uniforme de radios (10, 14, 16 y 20 px) */
-  --radius-xs:   6px;
-  --radius-sm:   10px;
-  --radius-md:   14px;
-  --radius-lg:   16px;
-  --radius-xl:   20px;
+  /* Sistema uniforme de radios contenidos ISOM */
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   10px;
+  --radius-xl:   12px;
   --radius-pill: 9999px;
 
-  /* Sombras limpias de profundidad sutil (sin manchas oscuras de plantilla) */
-  --shadow-sm:   0 1px 2px rgba(25, 38, 28, 0.04), 0 1px 1px rgba(25, 38, 28, 0.02);
-  --shadow-md:   0 4px 12px rgba(25, 38, 28, 0.05), 0 1px 3px rgba(25, 38, 28, 0.03);
-  --shadow-lg:   0 12px 28px rgba(25, 38, 28, 0.08), 0 2px 6px rgba(25, 38, 28, 0.04);
+  /* Sin sombras difusas: jerarquía por bordes 1px */
+  --shadow-sm:   none;
+  --shadow-md:   none;
+  --shadow-lg:   0 12px 28px rgba(15, 19, 17, 0.12);
 
   /* Dimensiones */
-  --eco-bar-height: 40px;
+  --eco-bar-height: 44px;
   --header-height: 58px;
-  --nav-height:    66px;
+  --nav-height:    64px;
   --max-width:     640px;
 }
 
-/* --- TOKENS TEMA OSCURO (DESIGN RICRA OBSIDIAN + APPLE PHYSICS) --- */
+/* --- TOKENS TEMA OSCURO (CURSO ISOM NOCHE) --- */
 [data-theme="dark"] {
-  --forest-shadow:   #19241B;
-  --accent-teal:     #6EE7B7;
-  --bg:              #111A13;
+  color-scheme: dark;
+
+  --isom-course:       #C084FC;
+  --isom-course-hover: #D1A3FD;
+  --isom-course-ink:   #160824;
+  --isom-course-soft:  rgba(192, 132, 252, 0.16);
+  --domain-atelier-swatch: #EAB308;
+  --domain-unu-swatch:     #7BA66A;
+  --domain-unu-bg:         #1C2A1D;
+  --domain-unu-ink:        #A8D294;
+  --domain-arena-swatch:   #5FA7D6;
+
+  --forest-shadow:   #18201C;
+  --accent-teal:     #4ADE80;
+  --bg:              #0F1311;
   --bg-gradient:     none;
-  --surface:         #19241B;
-  --surface-card:    #19241B;
-  --surface-solid:   #19241B;
-  --surface-subtle:  #222F24;
-  --surface-hover:   #263628;
-  --surface-active:  #2E4131;
-  --chrome-bg:       rgba(17, 26, 19, 0.94);
+  --surface:         #18201C;
+  --surface-card:    #18201C;
+  --surface-solid:   #18201C;
+  --surface-subtle:  #131916;
+  --surface-hover:   #212C26;
+  --surface-active:  #29362F;
+  --chrome-bg:       #18201C;
 
-  --matrix-header-bg:   #19241B;
-  --matrix-header-text: #F1F5EB;
-  --matrix-corner-bg:   #222F24;
-  --matrix-hour-bg:     #111A13;
-  --matrix-hour-border: #334436;
+  --matrix-header-bg:   #18201C;
+  --matrix-header-text: #EEF2EC;
+  --matrix-corner-bg:   #212C26;
+  --matrix-hour-bg:     #0F1311;
+  --matrix-hour-border: #2B3730;
 
-  --text-primary:    #F1F5EB;
-  --text-secondary:  #B5C0B2;
-  --text-tertiary:   #738571;
-  --text-quaternary: #4C5D4B;
+  --text-primary:    #EEF2EC;
+  --text-secondary:  #B8C5BA;
+  --text-tertiary:   #8EA092;
+  --text-quaternary: #5D6F61;
 
-  --border-hairline: #334436;
-  --border-subtle:   #334436;
-  --border-focus:    #C2D7A3;
+  --border-hairline: #2B3730;
+  --border-subtle:   #2B3730;
+  --border-focus:    #C084FC;
 
-  --accent:          #C2D7A3;
-  --primary:         #C2D7A3;
-  --accent-contrast: #111A13;
-  --accent-subtle:   #222F24;
-  --accent-tint:     #C2D7A3;
+  --accent:          #C084FC;
+  --primary:         #C084FC;
+  --accent-contrast: #160824;
+  --accent-subtle:   rgba(192, 132, 252, 0.16);
+  --accent-tint:     #C084FC;
 
-  --status-success:     #52B788;
-  --status-success-bg:  rgba(82, 183, 136, 0.16);
-  --status-warning:     #D49B44;
-  --status-warning-bg:  rgba(212, 155, 68, 0.16);
-  --status-danger:      #E06D69;
-  --status-danger-bg:   rgba(224, 109, 105, 0.16);
-  --status-info:        #65A9C0;
-  --status-info-bg:     rgba(101, 169, 192, 0.16);
+  --status-success:     #4ADE80;
+  --status-success-bg:  rgba(74, 222, 128, 0.14);
+  --status-warning:     #FBBF24;
+  --status-warning-bg:  rgba(251, 191, 36, 0.14);
+  --status-danger:      #F87171;
+  --status-danger-bg:   rgba(248, 113, 113, 0.16);
+  --status-info:        #60B0E5;
+  --status-info-bg:     rgba(96, 176, 229, 0.16);
 
-  --shadow-sm:   0 1px 3px rgba(0, 0, 0, 0.28);
-  --shadow-md:   0 4px 14px rgba(0, 0, 0, 0.36);
-  --shadow-lg:   0 12px 30px rgba(0, 0, 0, 0.48);
+  --shadow-sm:   none;
+  --shadow-md:   none;
+  --shadow-lg:   0 14px 32px rgba(0, 0, 0, 0.45);
 }
 
 /* =====================================================================
@@ -156,9 +174,22 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  accent-color: var(--accent);
+  scrollbar-color: var(--border-subtle) var(--bg);
+  scrollbar-width: thin;
+}
+
+@supports not (scrollbar-color: auto) {
+  html {
+    scrollbar-width: auto;
+  }
+}
+
 html, body {
   width: 100%;
   height: 100%;
+  min-height: 100dvh;
   background: var(--bg);
   background-image: var(--bg-gradient);
   color: var(--text-primary);
@@ -170,6 +201,12 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
   user-select: none;
+  caret-color: var(--accent);
+}
+
+::selection {
+  background: var(--accent-subtle);
+  color: var(--text-primary);
 }
 
 /* =====================================================================
@@ -187,7 +224,7 @@ html, body {
 }
 
 /* =====================================================================
-   HEADER SUPERIOR (FROSTED GLASS CHROME)
+   HEADER SUPERIOR (CRISP ISOM CHROME)
    ===================================================================== */
 .top-header {
   height: calc(var(--header-height) + env(safe-area-inset-top, 0px));
@@ -199,10 +236,7 @@ html, body {
   gap: 10px;
   flex-shrink: 0;
   background: var(--chrome-bg);
-  backdrop-filter: blur(24px) saturate(190%);
-  -webkit-backdrop-filter: blur(24px) saturate(190%);
-  border-bottom: 1px solid var(--border-hairline);
-  box-shadow: 0 2px 10px rgba(17, 26, 19, 0.02);
+  border-bottom: 1.5px solid var(--border-hairline);
   z-index: 25;
 }
 
@@ -458,30 +492,25 @@ button:active, .btn-primary:active, .btn-secondary:active, .btn-danger:active {
     0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
+.live-card {
+  border: 1.5px solid var(--isom-course);
+}
+
 .live-card:hover {
-  box-shadow: var(--shadow-md);
+  border-color: var(--isom-course-hover);
 }
 
 .live-card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--tea-green);
-  border-top-left-radius: var(--radius-lg);
-  border-bottom-left-radius: var(--radius-lg);
+  display: none;
 }
 
 .live-card.in-class {
   background: var(--surface);
-  border-color: rgba(217, 119, 6, 0.45);
-  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.08);
+  border-color: var(--status-warning);
 }
 
 .live-card.in-class::before {
-  background: #f59e0b;
+  display: none;
 }
 
 .live-card.in-class .live-dot.pulse {
@@ -4204,7 +4233,8 @@ button:active, .btn-primary:active, .btn-secondary:active, .btn-danger:active {
     z-index: 30;
   }
 
-  .top-header .brand .brand-badge {
+  .top-header .brand .brand-badge,
+  .top-header .brand .brand-diamond {
     display: none;
   }
 
@@ -6091,32 +6121,31 @@ html.theme-transitioning .modal-sheet {
 .brand-diamond::before {
   content: "";
   position: absolute;
-  inset: 2px;
-  border-radius: 7px;
-  transform: rotate(45deg);
-  border: 3px solid #167c4d;
-  border-right-color: #6bd49e;
-  border-bottom-color: #6bd49e;
-  background: var(--surface-card);
+  inset: 0;
+  border-radius: 6px;
+  transform: none;
+  border: 1.5px solid var(--domain-unu-swatch);
+  background: var(--domain-unu-bg);
 }
 
 .brand-diamond .brand-badge {
   position: relative;
   z-index: 1;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
 }
 
 .cloud-header-pill {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  min-height: 32px;
-  padding: 5px 10px;
-  border-radius: var(--radius-pill);
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
   background: var(--surface-subtle);
   border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
+  font-family: var(--font-mono);
   font-size: 11.5px;
   font-weight: 600;
 }
@@ -6142,7 +6171,7 @@ html.theme-transitioning .modal-sheet {
     display: none;
   }
   .cloud-header-pill {
-    padding: 4px 8px;
+    padding: 0 8px;
     font-size: 11px;
   }
   #cloud-header-label {
@@ -6158,25 +6187,17 @@ html.theme-transitioning .modal-sheet {
 }
 
 /* =====================================================================
-   BARRA SWITCHER DEL ECOSISTEMA (.eco-switch)
+   BARRA SWITCHER DEL ECOSISTEMA (.eco-switch — CURSO ISOM UNIFICADA)
    ===================================================================== */
 .eco-switch {
-  --eco-bg: var(--chrome-bg);
-  --eco-ink: var(--text-primary);
-  --eco-ink-muted: var(--text-secondary);
-  --eco-accent: var(--accent);
-  --eco-accent-ink: var(--accent-contrast);
-  --eco-border: var(--border-hairline);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-height: calc(40px + env(safe-area-inset-top, 0px));
-  padding: env(safe-area-inset-top, 0px) 12px 0;
-  background: var(--eco-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--eco-border);
+  min-height: calc(44px + env(safe-area-inset-top, 0px));
+  padding: calc(4px + env(safe-area-inset-top, 0px)) 16px 4px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-hairline);
   overflow-x: auto;
   flex-shrink: 0;
   scrollbar-width: none;
@@ -6191,37 +6212,86 @@ html.theme-transitioning .modal-sheet {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 40px;
-  min-width: 40px;
-  padding: 0 12px;
-  border-radius: 8px;
-  color: var(--eco-ink-muted);
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 13px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
   text-decoration: none;
-  font-size: 12.5px;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
 .eco-switch-link:hover {
-  color: var(--eco-ink);
-  background: var(--surface-subtle);
+  color: var(--text-primary);
+  background: var(--surface-hover);
 }
 
 .eco-switch-link:focus-visible {
-  outline: 2px solid var(--eco-accent);
+  outline: 2px solid var(--isom-course);
   outline-offset: -2px;
 }
 
 .eco-switch-link.is-current {
-  background: var(--eco-accent);
-  color: var(--eco-accent-ink);
+  background: var(--isom-course-soft);
+  border-color: var(--isom-course);
+  color: var(--isom-course);
+}
+
+.eco-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.eco-swatch.is-dir {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--isom-course);
+  background: var(--isom-course-soft);
+}
+
+.eco-swatch.is-atelier {
+  background: var(--domain-atelier-swatch);
+}
+
+.eco-swatch.is-unu {
+  background: var(--domain-unu-swatch);
+}
+
+.eco-swatch.is-arena {
+  background: var(--domain-arena-swatch);
 }
 
 .eco-label-short {
   display: none;
+}
+
+@media (max-width: 720px) {
+  .eco-switch {
+    padding: calc(4px + env(safe-area-inset-top, 0px)) 8px 4px;
+    gap: 4px;
+  }
+  .eco-switch-link {
+    padding: 0 9px;
+    gap: 5px;
+    font-size: 12.5px;
+  }
+  .eco-label-full {
+    display: none;
+  }
+  .eco-label-short {
+    display: inline;
+  }
 }
 
 @media (max-width: 420px) {
@@ -6232,13 +6302,7 @@ html.theme-transitioning .modal-sheet {
   }
   .eco-switch-link {
     padding: 0 10px;
-    font-size: 12px;
-  }
-  .eco-label-full {
-    display: none;
-  }
-  .eco-label-short {
-    display: inline;
+    font-size: 12.5px;
   }
 }
 
@@ -6249,15 +6313,15 @@ html.theme-transitioning .modal-sheet {
     left: 0;
     right: 0;
     width: 100%;
-    height: var(--eco-bar-height, 40px);
-    min-height: var(--eco-bar-height, 40px);
-    padding: 0 16px;
+    height: var(--eco-bar-height, 44px);
+    min-height: var(--eco-bar-height, 44px);
+    padding: 4px 16px;
     justify-content: center;
     z-index: 45;
   }
   .eco-switch-link {
-    min-height: 32px;
-    padding: 4px 12px;
+    min-height: 34px;
+    padding: 0 13px;
   }
 }
 
@@ -6315,10 +6379,134 @@ html.theme-transitioning .modal-sheet {
   margin-bottom: 14px;
   border-radius: var(--radius-md);
   background: var(--surface-card);
-  border: 1px solid var(--accent-tint);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-subtle);
   font-size: 12.5px;
   color: var(--text-primary);
+}
+
+/* ==================== FINISH REVIEW POLISH (CURSO ISOM) ==================== */
+/* 1. Replace thick vertical left stripe on class cards with a crisp 9px circular domain dot */
+.class-card-stripe {
+  position: static !important;
+  left: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  width: 9px !important;
+  height: 9px !important;
+  min-width: 9px !important;
+  border-radius: 50% !important;
+  margin: 0 !important;
+  align-self: center !important;
+  flex-shrink: 0 !important;
+}
+
+/* 2. Remove uppercase kicker eyebrow above course heading in live-card: lead with course title */
+.live-card {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+}
+
+.live-card .live-card-title {
+  order: -1;
+  margin-bottom: 0 !important;
+}
+
+.live-card .live-card-eyebrow {
+  order: 0;
+  margin-bottom: 2px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  color: var(--text-secondary) !important;
+}
+
+.live-card .live-card-meta {
+  order: 1;
+}
+
+.live-card .live-progress-bar {
+  order: 2;
+}
+
+/* 3. Flatten nested Pomodoro container inside Enfoque y Bienestar into hairline-divided section */
+.focus-clock-row {
+  background: transparent !important;
+  border: none !important;
+  border-top: 1px solid var(--border-hairline) !important;
+  border-bottom: 1px solid var(--border-hairline) !important;
+  border-radius: 0 !important;
+  padding: 12px 0 !important;
+}
+
+/* 4. Unify SOS Calma emergency affordance in semantic danger red across all 4 apps */
+#eco-link-calm {
+  background: var(--status-danger) !important;
+  border-color: var(--status-danger) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+[data-theme="dark"] #eco-link-calm {
+  color: #240707 !important;
+}
+
+/* 5. Prevent mobile header date truncation at 390px */
+@media (max-width: 480px) {
+  .top-header {
+    padding: 0 12px !important;
+    gap: 6px !important;
+  }
+  .top-header .brand {
+    gap: 8px !important;
+  }
+  .top-header .brand-badge {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  .top-header .brand-title {
+    font-size: 16px !important;
+  }
+  .brand-subtitle {
+    font-size: 11px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+  .top-header .header-actions {
+    gap: 5px !important;
+  }
+  .top-header .cloud-header-pill {
+    padding: 0 8px !important;
+    font-size: 11px !important;
+  }
+  .top-header .theme-toggle-btn {
+    min-width: 34px !important;
+    padding: 0 7px !important;
+  }
+  .top-header .theme-toggle-btn #theme-toggle-label {
+    display: none;
+  }
+  .top-header .btn-sm {
+    padding: 0 9px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .eco-switch-link.is-current,
+  .card,
+  .btn-primary,
+  .btn-secondary {
+    border: 1px solid CanvasText;
+  }
 }
 
 
